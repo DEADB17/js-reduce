@@ -1,0 +1,14 @@
+{
+  "name": "json-walk",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests/index.js"
+  },
+  "author": "DEADB17 <DEADB17@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "tape": "^3.0.0"
+  }
+}
