@@ -5,11 +5,18 @@
 var test = require('tape');
 
 
-var walk = require('../');
+var walk = require('../').walk;
+var jsonReducer = require('../').jsonReducer;
 
 // transform functions
-var id = function (res, val, key) { res[key] = val; return res; };
-var upKey = function (res, val, key) { res[key.toUpperCase()] = val; return res; };
+var id = function (rec, acc, val, key) {
+    acc[key] = rec(val);
+    return acc;
+};
+var upKey = function (rec, acc, val, key) {
+    acc[key.toUpperCase()] = rec(val);
+    return acc;
+};
 
 // sample data
 var sample1 = [
@@ -23,16 +30,12 @@ var sample1 = [
 ];
 
 test('walk', function (t) {
-    //t.plan(4);
+    t.plan(2);
 
-    t.deepEqual(walk(id, id, sample1),
+    t.deepEqual(walk(jsonReducer(id, id), sample1),
                 sample1,
                 'id, id, sample1');
-    t.deepEqual(walk(id, upKey, sample1),
+    t.deepEqual(walk(jsonReducer(id, upKey), sample1),
                 [ {}, 'hello', { 1: 1, TWO: [ 2, 3, 4 ] }, 1 ],
                 'id, upKey, sample1');
-
-    t.end();
 });
-
-console.log();

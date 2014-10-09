@@ -2,20 +2,20 @@
 
 'use strict';
 
-var reduceArray = function (res, array, op) {
+var reduceArray = function (acc, op, array) {
     for (var i = 0, n = array.length; i < n; i += 1) {
-        res = op(res, array[i], i, array);
+        acc = op(acc, array[i], i, array);
     }
-    return res;
+    return acc;
 };
 
-var reduceObject = function (res, object, op) {
+var reduceObject = function (acc, op, object) {
     for (var key in object) {
         if (object.hasOwnProperty(key)) {
-            res = op(res, object[key], key, object);
+            acc = op(acc, object[key], key, object);
         }
     }
-    return res;
+    return acc;
 };
 
 
@@ -28,20 +28,29 @@ var isObject = function (it) { return classOf(it) === 'Object'; };
 
 
 
-module.exports = function (arrayFn, objFn, it) {
+var walk = function (reducer, it) {
     return (function transform(it) {
+        return reducer(transform, it);
+    }(it));
+};
+
+var jsonReducer = function (arrayFn, objFn) {
+    return function (transform, it) {
         if (isArray(it)) {
-            return reduceArray([], it, function (res, val, key, col) {
-                var value = transform(val);
-                return arrayFn(res, value, key, col);
-            });
+            return reduceArray([], function (acc, val, key, col) {
+                return arrayFn(transform, acc, val, key, col);
+            }, it);
         } else if (isObject(it)) {
-            return reduceObject({}, it, function (res, val, key, col) {
-                var value = transform(val);
-                return objFn(res, value, key, col);
-            });
+            return reduceObject({}, function (acc, val, key, col) {
+                return objFn(transform, acc, val, key, col);
+            }, it);
         } else {
             return it;
         }
-    }(it));
+    };
+};
+
+module.exports = {
+    walk: walk,
+    jsonReducer: jsonReducer
 };
