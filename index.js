@@ -25,32 +25,40 @@ var classOf = function (it) {
 };
 var isArray = function (it) { return classOf(it) === 'Array'; };
 var isObject = function (it) { return classOf(it) === 'Object'; };
+var isString = function (it) { return classOf(it) === 'String'; };
 
 
 
-var walk = function (reducer, it) {
-    return (function transform(it) {
-        return reducer(transform, it);
-    }(it));
-};
-
-var jsonReducer = function (arrayFn, objFn) {
-    return function (transform, it) {
+module.exports = {
+    idReducer: function rec(it) {
         if (isArray(it)) {
-            return reduceArray([], function (acc, val, key, col) {
-                return arrayFn(transform, acc, val, key, col);
+            return reduceArray([], function (acc, val, key) {
+                acc[key] = rec(val);
+                return acc;
             }, it);
         } else if (isObject(it)) {
-            return reduceObject({}, function (acc, val, key, col) {
-                return objFn(transform, acc, val, key, col);
+            return reduceObject({}, function (acc, val, key) {
+                acc[key] = rec(val);
+                return acc;
             }, it);
         } else {
             return it;
         }
-    };
-};
+    },
 
-module.exports = {
-    walk: walk,
-    jsonReducer: jsonReducer
+    upCaseReducer: function rec(it) {
+        if (isArray(it)) {
+            return reduceArray([], function (acc, val, key) {
+                acc[key] = rec(val);
+                return acc;
+            }, it);
+        } else if (isObject(it)) {
+            return reduceObject({}, function (acc, val, key) {
+                acc[key.toUpperCase()] = rec(val);
+                return acc;
+            }, it);
+        } else {
+            return isString(it) ? it.toUpperCase() : it;
+        }
+    }
 };
